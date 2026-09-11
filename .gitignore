@@ -1,0 +1,9 @@
+# Never commit real credentials
+*.env
+secrets.json
+
+# OS
+.DS_Store
+
+# Power BI (binary, don't diff well - keep dax_measures.md as the source of truth)
+*.pbix

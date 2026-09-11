@@ -1,0 +1,90 @@
+{
+    "name": "PL_CSV_to_AzureSQL_Dynamic",
+    "type": "Microsoft.DataFactory/factories/pipelines",
+    "properties": {
+        "description": "Bonus/advanced version of PL_CSV_to_AzureSQL. Demonstrates pipeline Parameters and a ForEach activity driving one reusable, parameterized Copy Activity instead of one hard-coded activity per file. Loops over the fileTableMap parameter and copies each ADLS file into its matching Azure SQL table.",
+        "parameters": {
+            "fileTableMap": {
+                "type": "array",
+                "defaultValue": [
+                    { "fileName": "customers.csv", "tableName": "Customers" },
+                    { "fileName": "products.csv", "tableName": "Products" },
+                    { "fileName": "orders.csv", "tableName": "Orders" }
+                ]
+            }
+        },
+        "activities": [
+            {
+                "name": "ForEach_File",
+                "type": "ForEach",
+                "typeProperties": {
+                    "items": {
+                        "value": "@pipeline().parameters.fileTableMap",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "Copy_Generic",
+                            "type": "Copy",
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSReadSettings",
+                                        "recursive": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "AzureSqlSink",
+                                    "writeBehavior": "insert",
+                                    "preCopyScript": {
+                                        "value": "TRUNCATE TABLE dbo.@{item().tableName}",
+                                        "type": "Expression"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": true,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_ADLS_CSV_Generic",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "fileName": {
+                                            "value": "@item().fileName",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_SQL_Table_Generic",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "tableName": {
+                                            "value": "@item().tableName",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "annotations": []
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "name": "DS_SQL_Table_Generic",
+    "type": "Microsoft.DataFactory/factories/datasets",
+    "properties": {
+        "linkedServiceName": {
+            "referenceName": "LS_AzureSqlDatabase",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "tableName": {
+                "type": "string"
+            }
+        },
+        "annotations": [],
+        "type": "AzureSqlTable",
+        "schema": [],
+        "typeProperties": {
+            "schema": "dbo",
+            "table": {
+                "value": "@dataset().tableName",
+                "type": "Expression"
+            }
+        }
+    }
+}

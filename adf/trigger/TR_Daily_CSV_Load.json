@@ -1,0 +1,26 @@
+{
+    "name": "TR_Daily_CSV_Load",
+    "type": "Microsoft.DataFactory/factories/triggers",
+    "properties": {
+        "annotations": [],
+        "runtimeState": "Stopped",
+        "pipelines": [
+            {
+                "pipelineReference": {
+                    "referenceName": "PL_CSV_to_AzureSQL",
+                    "type": "PipelineReference"
+                },
+                "parameters": {}
+            }
+        ],
+        "type": "ScheduleTrigger",
+        "typeProperties": {
+            "recurrence": {
+                "frequency": "Day",
+                "interval": 1,
+                "startTime": "2024-01-01T06:00:00Z",
+                "timeZone": "UTC"
+            }
+        }
+    }
+}

@@ -1,0 +1,146 @@
+{
+    "name": "PL_CSV_to_AzureSQL",
+    "type": "Microsoft.DataFactory/factories/pipelines",
+    "properties": {
+        "description": "Copies customers.csv, products.csv and orders.csv from ADLS Gen2 into their matching Azure SQL tables.",
+        "activities": [
+            {
+                "name": "Copy_Customers",
+                "type": "Copy",
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "writeBehavior": "insert",
+                        "preCopyScript": "TRUNCATE TABLE dbo.Customers"
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS_ADLS_Customers",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS_SQL_Customers",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "Copy_Products",
+                "type": "Copy",
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "writeBehavior": "insert",
+                        "preCopyScript": "TRUNCATE TABLE dbo.Products"
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS_ADLS_Products",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS_SQL_Products",
+                        "type": "DatasetReference"
+                    }
+                ]
+            },
+            {
+                "name": "Copy_Orders",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "Copy_Customers",
+                        "dependencyConditions": ["Succeeded"]
+                    },
+                    {
+                        "activity": "Copy_Products",
+                        "dependencyConditions": ["Succeeded"]
+                    }
+                ],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "writeBehavior": "insert",
+                        "preCopyScript": "TRUNCATE TABLE dbo.Orders"
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "DS_ADLS_Orders",
+                        "type": "DatasetReference"
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "DS_SQL_Orders",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "annotations": []
+    }
+}
